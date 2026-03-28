@@ -1,6 +1,7 @@
 {
   "functions": {
-    "api/fund.py": {
+    "api/*.py": {
+      "runtime": "python3.11",
       "maxDuration": 10
     }
   },

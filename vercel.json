@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/fund.py": {
-      "runtime": "python3.9"
+      "maxDuration": 10
     }
   },
   "rewrites": [

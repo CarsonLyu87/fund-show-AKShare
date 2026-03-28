@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API测试页面</title>
+</head>
+<body>
+    <h1>Fund Show AKShare API测试</h1>
+    
+    <div>
+        <h2>测试API端点：</h2>
+        <button onclick="testAPI()">测试 /api/fund</button>
+        <button onclick="testFund('005827')">测试 /api/fund/005827</button>
+        <button onclick="testFund('161725')">测试 /api/fund/161725</button>
+    </div>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 100px;">
+        结果将显示在这里...
+    </div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/fund');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `错误: ${error.message}`;
+            }
+        }
+        
+        async function testFund(fundCode) {
+            try {
+                const response = await fetch(`/api/fund/${fundCode}`);
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `错误: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

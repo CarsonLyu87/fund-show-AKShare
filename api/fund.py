@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from datetime import datetime
+import traceback
 
 # 尝试导入AKShare
 try:
@@ -13,8 +14,9 @@ except ImportError as e:
     AKSHARE_AVAILABLE = False
     print(f"⚠️ AKShare not available: {e}")
 
+# Vercel Serverless Function 入口点
 def handler(request):
-    """Vercel Serverless Function 入口点"""
+    """处理HTTP请求"""
     
     # 设置CORS头
     headers = {
@@ -59,6 +61,7 @@ def handler(request):
         error_response = {
             "success": False,
             "error": str(e),
+            "traceback": traceback.format_exc(),
             "timestamp": datetime.now().isoformat()
         }
         return {

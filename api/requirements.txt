@@ -1,5 +1,3 @@
-Flask==2.3.3
-Flask-CORS==4.0.0
-akshare==1.12.30
-pandas==2.1.4
-numpy==1.26.0
+akshare>=1.12.0
+pandas>=2.0.0
+numpy>=1.24.0

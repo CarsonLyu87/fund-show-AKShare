@@ -91,17 +91,25 @@ def get_all_funds():
 def get_fund_data(fund_code):
     """获取单个基金数据"""
     try:
-        # 基金基本信息
-        info = get_fund_info(fund_code)
-        
-        # 历史净值数据
-        history = get_fund_history(fund_code)
-        
-        # 持仓数据
-        holdings = get_fund_holdings(fund_code)
-        
-        # 实时估值数据
+        # 实时估值数据 - 这个必须有，用于基金名称
         estimate = get_fund_estimate(fund_code)
+        
+        # 其他数据，如果获取失败使用空数据
+        try:
+            info = get_fund_info(fund_code)
+        except:
+            info = {}
+        
+        try:
+            history = get_fund_history(fund_code)
+        except Exception as e:
+            print(f"获取历史数据失败 {fund_code}: {e}")
+            history = []
+        
+        try:
+            holdings = get_fund_holdings(fund_code)
+        except:
+            holdings = []
         
         return {
             "success": True,
@@ -118,6 +126,7 @@ def get_fund_data(fund_code):
         }
         
     except Exception as e:
+        print(f"获取基金数据完全失败 {fund_code}: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -145,14 +154,14 @@ def get_fund_estimate(fund_code):
 def get_fund_history(fund_code):
     """获取基金历史净值"""
     import hashlib
+    from datetime import timedelta
     
     history = []
     code_hash = int(hashlib.md5(fund_code.encode()).hexdigest(), 16)
     base_value = 1.5 + (code_hash % 100) / 100
     
     for i in range(30, -1, -1):
-        date = datetime.now()
-        date = date.replace(day=date.day - i)
+        date = datetime.now() - timedelta(days=i)
         
         daily_hash = int(hashlib.md5(f"{fund_code}{i}".encode()).hexdigest(), 16)
         daily_change = (daily_hash % 40 - 20) / 1000
@@ -177,18 +186,34 @@ def get_fund_holdings(fund_code):
     ]
     
     holdings = []
-    remaining_percent = 100
     code_hash = int(hashlib.md5(fund_code.encode()).hexdigest(), 16)
+    
+    # 生成前9个持仓的比例（5-20%之间）
+    percentages = []
+    for i in range(9):
+        daily_hash = int(hashlib.md5(f"{fund_code}{i}".encode()).hexdigest(), 16)
+        percent = daily_hash % 16 + 5  # 5-20%
+        percentages.append(percent)
+    
+    # 第10个持仓用剩余的比例
+    total_so_far = sum(percentages)
+    last_percent = 100 - total_so_far if total_so_far < 100 else 5
+    
+    # 确保所有比例都是正数
+    percentages.append(max(1, last_percent))
+    
+    # 如果总和超过100，按比例缩放
+    total = sum(percentages)
+    if total > 100:
+        percentages = [p * 100 / total for p in percentages]
     
     for i in range(10):
         daily_hash = int(hashlib.md5(f"{fund_code}{i}".encode()).hexdigest(), 16)
-        percent = i < 9 and (daily_hash % 15 + 5) or remaining_percent
-        remaining_percent -= percent
         
         holdings.append({
             "股票代码": f"{code_hash % 100000:06d}",
             "股票名称": stock_names[i % len(stock_names)],
-            "占净值比例": f"{percent:.2f}%",
+            "占净值比例": f"{percentages[i]:.2f}%",
             "持股数": (daily_hash % 1000000 + 100000),
             "持仓市值": (daily_hash % 1000000000 + 100000000),
             "季度": "2023Q4"
